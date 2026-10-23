@@ -35,6 +35,15 @@
    "const dateField=document.getElementById('preferredDate');dateField.addEventListener('blur',()=>{const v=dateField.value.trim();if(/^[0-9]{8}$/.test(v))dateField.value=v.slice(0,2)+'/'+v.slice(2,4)+'/'+v.slice(4);});"+
    "const form = document.getElementById('bookingForm');"
   );
+  // Add "Other" as the last service option in SQ/SR/EN.
+  replaceRequired(
+   "\${SERVICES.map(s=>\`<option value=\"\${s.title}\">\${s.title}</option>\`).join('')}</select>",
+   "\${SERVICES.map(s=>\`<option value=\"\${s.title}\">\${s.title}</option>\`).join('')}<option value=\"other\">Të tjera</option></select>"
+  );
+  replaceRequired(
+   "option.textContent=i===0?t.servicePlaceholder:t.services[i-1][0];",
+   "option.textContent=i===0?t.servicePlaceholder:(option.value==='other'?(lang==='sr'?'Ostalo':lang==='en'?'Other':'Të tjera'):t.services[i-1][0]);"
+  );
   document.open();document.write(page);document.close();
  }catch(err){
   console.error(err);
