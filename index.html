@@ -35,15 +35,27 @@
    "const dateField=document.getElementById('preferredDate');dateField.addEventListener('blur',()=>{const v=dateField.value.trim();if(/^[0-9]{8}$/.test(v))dateField.value=v.slice(0,2)+'/'+v.slice(2,4)+'/'+v.slice(4);});"+
    "const form = document.getElementById('bookingForm');"
   );
-  // Add "Other" as the last service option in SQ/SR/EN.
-  replaceRequired(
-   "\${SERVICES.map(s=>\`<option value=\"\${s.title}\">\${s.title}</option>\`).join('')}</select>",
-   "\${SERVICES.map(s=>\`<option value=\"\${s.title}\">\${s.title}</option>\`).join('')}<option value=\"other\">Të tjera</option></select>"
-  );
-  replaceRequired(
-   "option.textContent=i===0?t.servicePlaceholder:t.services[i-1][0];",
-   "option.textContent=i===0?t.servicePlaceholder:(option.value==='other'?(lang==='sr'?'Ostalo':lang==='en'?'Other':'Të tjera'):t.services[i-1][0]);"
-  );
+  // Install the additional service option after the original translations initialize.
+  const installExtraServiceOption = function(){
+    const names={sq:'Të tjera',sr:'Ostalo',en:'Other'};
+    if(typeof VALONI_I_LOCALES!=='undefined'){
+      for(const lang of Object.keys(names)){
+        const items=VALONI_I_LOCALES[lang]&&VALONI_I_LOCALES[lang].services;
+        if(Array.isArray(items)&&!items.some(item=>item[0]===names[lang]))items.push([names[lang],'']);
+      }
+    }
+    const select=document.getElementById('service');
+    if(select&&!select.querySelector('option[value="other"]')){
+      const opt=document.createElement('option');
+      opt.value='other';
+      const lang=window.ValoniTranslations?.language||'sq';
+      opt.textContent=names[lang]||names.sq;
+      select.appendChild(opt);
+    }
+  };
+  if(page.includes('</body>')){
+    page=page.replace('</body>','<scr'+'ipt>('+installExtraServiceOption.toString()+')();</scr'+'ipt></body>');
+  }
   document.open();document.write(page);document.close();
  }catch(err){
   console.error(err);
